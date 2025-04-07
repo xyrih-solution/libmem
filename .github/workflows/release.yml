@@ -4,16 +4,11 @@ name: Release
 
 on:
   push:
-    tags:
-      - '*'
-  workflow_dispatch:
-    inputs:
-      checkout-branch:
-        description: 'The branch or tag to checkout (same as workflow if not specified)'
-        required: false
-      targets:
-        description: 'The targets to build (regex, all if not specified)'
-        required: false
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
 
 jobs:
 
@@ -90,22 +85,3 @@ jobs:
         with:
           name: libmem-${{ needs.prepare.outputs.artifact-version }}-${{ matrix.target }}
           path: out/libmem-${{ needs.prepare.outputs.artifact-version }}-${{ matrix.target }}.tar.gz
-
-  release:
-    needs: [prepare, build]
-    if: needs.prepare.outputs.release == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # allows the action to create a release
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4.1.7
-      - name: Create release
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          omitBody: true
-          prerelease: true
-          artifacts: libmem-*/libmem-*.tar.gz
-          artifactContentType: application/gzip
-          artifactErrorsFailBuild: true
